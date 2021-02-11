@@ -1,16 +1,14 @@
 #![feature(new_uninit)]
 
-const N: usize = 512;
+const N: usize = 4;
 
 #[derive(Debug, Clone, Copy)]
 struct X<T: Copy>([T; N]);
-
 impl<T: Copy> X<T> {
     fn new(item: T) -> Self {
         Self([item; N])
     }
 }
-
 type A = X<i8>;
 type B = X<A>;
 type C = X<B>;
@@ -26,23 +24,6 @@ fn new() -> C {
 fn new_with_box() -> Box<C> {
     Box::new(C::new(B::new(A::new(1))))
 }
-
-// This function causes compile error. Vec<T> does not has 'Copy'.
-// fn new_with_vec() {
-//     #[derive(Clone, Copy)]
-//     struct X<T: Copy>(Vec<T>);
-//
-//     impl<T: Copy> X<T> {
-//         fn new(item: T) -> Self {
-//             Self(vec![item; N])
-//         }
-//     }
-//
-//     type A = X<i32>;
-//     type B = X<A>;
-//     type C = X<B>;
-//     let _ = C::new(B::new(A::new(1)));
-// }
 
 #[allow(dead_code)]
 fn new_with_box_new_uninit() -> Box<C> {
@@ -93,6 +74,22 @@ fn new_with_box_in_thread() -> Box<C> {
         .unwrap()
         .join()
         .unwrap()
+}
+
+#[derive(Debug, Clone)]
+struct XVec<T: Clone>(Vec<T>);
+impl<T: Clone> XVec<T> {
+    fn new(item: T) -> Self {
+        Self((0..N).map(|_| item.clone()).collect())
+    }
+}
+type AVec = XVec<i8>;
+type BVec = XVec<AVec>;
+type CVec = XVec<BVec>;
+
+#[allow(dead_code)]
+fn new_with_vec() -> CVec {
+    CVec::new(BVec::new(AVec::new(1)))
 }
 
 fn main() {}
