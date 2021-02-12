@@ -1,6 +1,6 @@
 #![feature(new_uninit)]
 
-const N: usize = 4;
+const N: usize = 512;
 
 #[derive(Debug, Clone, Copy)]
 struct X<T: Copy>([T; N]);
@@ -80,7 +80,7 @@ fn new_with_box_in_thread() -> Box<C> {
 struct XVec<T: Clone>(Vec<T>);
 impl<T: Clone> XVec<T> {
     fn new(item: T) -> Self {
-        Self((0..N).map(|_| item.clone()).collect())
+        Self(vec![item; N])
     }
 }
 type AVec = XVec<i8>;
